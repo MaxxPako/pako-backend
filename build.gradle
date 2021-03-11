@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.2.5.RELEASE'
+    id 'pl.allegro.tech.build.axion-release' version '1.12.1'
+    id 'com.palantir.docker' version '0.25.0'
+    id 'com.palantir.docker-run' version '0.25.0'
+}
+
+group 'pako.soft'
+project.version = scmVersion.version
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-devtools'
+    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+String imageName = "maxxpako/pako-backend:$version"
+
+docker {
+    name imageName
+    files "build/libs/${bootJar.archiveFileName.get()}"
+    buildArgs([JAR_FILE: bootJar.archiveFileName.get()])
+}
+
+dockerRun {
+    name project.name
+    image imageName
+    ports '8080:8080'
+    clean true
+}
